@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -6,11 +6,15 @@ import {
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { format, addMonths, subMonths } from "date-fns";
+import { format, addMonths, subMonths, getDaysInMonth } from "date-fns";
 
-const Header = () => {
+const Header = ({ onDateChange }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  useEffect(() => {
+    onDateChange(selectedDate);
+  }, [selectedDate, onDateChange]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -34,7 +38,8 @@ const Header = () => {
       <div className="relative">
         <button
           onClick={() => setShowDatePicker(!showDatePicker)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Select date"
         >
           <CalendarIcon size={20} className="text-gray-500" />
           <span className="text-lg font-semibold">
@@ -48,7 +53,12 @@ const Header = () => {
               selected={selectedDate}
               onChange={handleDateChange}
               inline
-              calendarClassName="!border-0"
+              calendarClassName="rounded-lg border border-gray-200 shadow-md"
+              dayClassName={(date) =>
+                date.getDate() === selectedDate.getDate()
+                  ? "bg-blue-600 text-white rounded-md"
+                  : "hover:bg-gray-200"
+              }
             />
           </div>
         )}
@@ -85,33 +95,6 @@ const Header = () => {
           onClick={() => setShowDatePicker(false)}
         />
       )}
-
-      <style jsx global>{`
-        .react-datepicker {
-          font-family: inherit;
-          border-radius: 0.5rem;
-        }
-        .react-datepicker__header {
-          background-color: white;
-          border-bottom: 1px solid #e5e7eb;
-          padding-top: 0.75rem;
-        }
-        .react-datepicker__current-month {
-          font-weight: 600;
-          font-size: 1rem;
-        }
-        .react-datepicker__day-name {
-          color: #6b7280;
-          font-weight: 500;
-        }
-        .react-datepicker__day--selected {
-          background-color: #2563eb !important;
-          border-radius: 0.375rem;
-        }
-        .react-datepicker__day:hover {
-          border-radius: 0.375rem;
-        }
-      `}</style>
     </div>
   );
 };
