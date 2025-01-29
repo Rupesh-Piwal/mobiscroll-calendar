@@ -1,5 +1,11 @@
+import Header from "./components/Header";
+
 const App = () => {
-  return <div>Guestara Assignment</div>;
+  return (
+    <div>
+      <Header />
+    </div>
+  );
 };
 
 export default App;
