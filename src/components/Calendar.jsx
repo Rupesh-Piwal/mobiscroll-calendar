@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { getDaysInMonth, format } from "date-fns";
+import { getDaysInMonth, format, isToday } from "date-fns"; // Import isToday
 import Header from "./Header";
 
 const GridRow = React.memo(({ resource, daysInMonth }) => (
   <div
     className="grid min-w-max"
     style={{
-      gridTemplateColumns: `200px repeat(${daysInMonth}, 80px)`,
+      gridTemplateColumns: `200px repeat(${daysInMonth}, 80px)`, // Dynamically set columns
     }}
   >
     <div className="border border-green-400 h-[60px] flex items-center justify-center sticky left-0 z-30 bg-green-200">
-      {resource.name}
+      {resource.name} {/* Display resource name */}
     </div>
     {[...Array(daysInMonth)].map((_, index) => (
       <div
@@ -21,46 +21,37 @@ const GridRow = React.memo(({ resource, daysInMonth }) => (
   </div>
 ));
 
-// TODO: Highlight today’s date.
-
 const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date()); // Track the current date
   const daysInMonth = getDaysInMonth(currentDate);
 
+  // Load resources from localStorage or initialize with default value
   const [resources, setResources] = useState(() => {
     const savedResources = localStorage.getItem("resources");
     return savedResources
       ? JSON.parse(savedResources)
-      : [
-          { id: 1, name: "Resource A" },
-          { id: 2, name: "Resource B" },
-          { id: 3, name: "Resource C" },
-          { id: 4, name: "Resource D" },
-          { id: 5, name: "Resource E" },
-          { id: 6, name: "Resource F" },
-          { id: 7, name: "Resource G" },
-          { id: 8, name: "Resource H" },
-          { id: 9, name: "Resource I" },
-          { id: 10, name: "Resource J" },
-        ];
+      : [{ id: 1, name: "Resource A" }]; // Default resource
   });
 
+  // Save resources to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("resources", JSON.stringify(resources));
   }, [resources]);
 
   const handleDateChange = (date) => {
-    setCurrentDate(date);
+    setCurrentDate(date); // Update the current date
   };
 
+  // Add a new resource
   const addResource = () => {
     const newResource = {
-      id: resources.length + 1,
-      name: `Resource ${String.fromCharCode(65 + resources.length)}`,
+      id: resources.length + 1, // Generate a unique ID
+      name: `Resource ${String.fromCharCode(65 + resources.length)}`, // Generate a name (A, B, C, ...)
     };
-    setResources([...resources, newResource]);
+    setResources([...resources, newResource]); // Add the new resource to the list
   };
 
+  // RENDER HEADER cells with weekday names and day numbers
   const renderHeaderCells = () => {
     return [...Array(daysInMonth)].map((_, index) => {
       const dayDate = new Date(
@@ -68,16 +59,19 @@ const Calendar = () => {
         currentDate.getMonth(),
         index + 1
       );
-      const weekdayName = format(dayDate, "EEE");
-      const dayNumber = index + 1;
+      const weekdayName = format(dayDate, "EEE"); 
+      const dayNumber = index + 1; 
+      const isCurrentDate = isToday(dayDate); 
 
       return (
         <div
           key={index}
-          className="bg-red-200 border border-red-400 h-[30px] flex flex-row gap-2 items-center justify-center"
+          className={`border border-red-400 h-[30px] flex flex-row gap-2 items-center justify-center ${
+            isCurrentDate ? "bg-yellow-200" : "bg-red-200" 
+          }`}
         >
-          <div>{weekdayName}</div>
-          <div>{dayNumber}</div>
+          <div>{weekdayName}</div> 
+          <div>{dayNumber}</div> 
         </div>
       );
     });
@@ -91,21 +85,23 @@ const Calendar = () => {
 
       <div className="overflow-auto flex-1">
         <div className="relative">
+          {/* Header Row */}
           <div
             className="sticky top-0 grid min-w-max bg-white z-40"
             style={{
-              gridTemplateColumns: `200px repeat(${daysInMonth}, 80px)`,
+              gridTemplateColumns: `200px repeat(${daysInMonth}, 80px)`, // Dynamically set columns
             }}
           >
             <div className="border border-gray-400 h-[30px] flex items-center justify-center sticky left-0 z-50 bg-white">
               Header
             </div>
-            {renderHeaderCells()}
+            {renderHeaderCells()} {/* Render weekday names and day numbers */}
           </div>
 
+          {/* Grid Rows */}
           {resources.map((resource) => (
             <GridRow
-              key={resource.id}
+              key={resource.id} // Use resource ID as the key
               resource={resource}
               daysInMonth={daysInMonth}
             />
@@ -113,6 +109,7 @@ const Calendar = () => {
         </div>
       </div>
 
+      {/* Button to add a new resource */}
       <div className="p-4 bg-white border-t border-gray-200">
         <button
           onClick={addResource}
