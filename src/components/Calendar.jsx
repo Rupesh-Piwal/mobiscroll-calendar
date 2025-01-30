@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getDaysInMonth, format } from "date-fns";
 import Header from "./Header";
 
@@ -24,18 +24,28 @@ const GridRow = React.memo(({ resource, daysInMonth }) => (
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const daysInMonth = getDaysInMonth(currentDate);
-  const [resources, setResources] = useState([
-    { id: 1, name: "Resource A" },
-    { id: 2, name: "Resource B" },
-    { id: 3, name: "Resource C" },
-    { id: 4, name: "Resource D" },
-    { id: 5, name: "Resource E" },
-    { id: 6, name: "Resource F" },
-    { id: 7, name: "Resource G" },
-    { id: 8, name: "Resource H" },
-    { id: 9, name: "Resource I" },
-    { id: 10, name: "Resource J" },
-  ]);
+
+  const [resources, setResources] = useState(() => {
+    const savedResources = localStorage.getItem("resources");
+    return savedResources
+      ? JSON.parse(savedResources)
+      : [
+          { id: 1, name: "Resource A" },
+          { id: 2, name: "Resource B" },
+          { id: 3, name: "Resource C" },
+          { id: 4, name: "Resource D" },
+          { id: 5, name: "Resource E" },
+          { id: 6, name: "Resource F" },
+          { id: 7, name: "Resource G" },
+          { id: 8, name: "Resource H" },
+          { id: 9, name: "Resource I" },
+          { id: 10, name: "Resource J" },
+        ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("resources", JSON.stringify(resources));
+  }, [resources]);
 
   const handleDateChange = (date) => {
     setCurrentDate(date);
