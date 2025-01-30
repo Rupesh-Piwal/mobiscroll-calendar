@@ -21,6 +21,8 @@ const GridRow = React.memo(({ resource, daysInMonth }) => (
   </div>
 ));
 
+// TODO: Highlight today’s date.
+
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const daysInMonth = getDaysInMonth(currentDate);

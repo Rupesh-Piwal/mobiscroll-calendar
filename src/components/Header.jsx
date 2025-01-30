@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { format, addMonths, subMonths, getDaysInMonth } from "date-fns";
+import { format, addMonths, subMonths } from "date-fns";
 
 const Header = ({ onDateChange }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -67,7 +67,7 @@ const Header = ({ onDateChange }) => {
       <div className="flex items-center gap-1">
         <button
           onClick={handlePrevMonth}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label="Previous month"
         >
           <ChevronLeft size={20} className="text-gray-600" />
@@ -75,14 +75,14 @@ const Header = ({ onDateChange }) => {
 
         <button
           onClick={handleTodayClick}
-          className="px-4 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors mx-2"
+          className="px-4 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors mx-2 cursor-pointer"
         >
           Today
         </button>
 
         <button
           onClick={handleNextMonth}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label="Next month"
         >
           <ChevronRight size={20} className="text-gray-600" />
