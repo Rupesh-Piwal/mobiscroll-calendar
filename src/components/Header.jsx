@@ -38,7 +38,7 @@ const Header = ({ onDateChange }) => {
       <div className="relative">
         <button
           onClick={() => setShowDatePicker(!showDatePicker)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label="Select date"
         >
           <CalendarIcon size={20} className="text-gray-500" />
