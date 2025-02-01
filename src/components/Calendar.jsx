@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { getDaysInMonth, format, isToday } from "date-fns"; // Import isToday
+import { getDaysInMonth, format, isToday } from "date-fns";
 import Header from "./Header";
 
+const getRandomColor = () => {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 const GridRow = React.memo(
-  ({ resource, daysInMonth, onSelectCells, selectedCells }) => {
+  ({ resource, daysInMonth, onSelectCells, selectedCells, events }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [startCell, setStartCell] = useState(null);
     const [endCell, setEndCell] = useState(null);
@@ -27,6 +36,19 @@ const GridRow = React.memo(
       }
     };
 
+    const getEventForCell = (index) => {
+      const cellDate = new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        index + 1
+      );
+      return events.find((event) => {
+        const eventStartDate = new Date(event.startDate);
+        const eventEndDate = new Date(event.endDate);
+        return cellDate >= eventStartDate && cellDate <= eventEndDate;
+      });
+    };
+
     return (
       <div
         className="grid min-w-max"
@@ -38,6 +60,7 @@ const GridRow = React.memo(
           {resource.name}
         </div>
         {[...Array(daysInMonth)].map((_, index) => {
+          const event = getEventForCell(index);
           const isSelected =
             selectedCells &&
             selectedCells.resourceId === resource.id &&
@@ -48,12 +71,19 @@ const GridRow = React.memo(
             <div
               key={index}
               className={`border border-indigo-400 h-[60px] ${
-                isSelected ? "bg-blue-300" : "bg-indigo-200"
+                isSelected
+                  ? "bg-blue-300"
+                  : event
+                  ? "bg-opacity-50"
+                  : "bg-indigo-200"
               }`}
+              style={{ backgroundColor: event ? event.color : undefined }}
               onMouseDown={() => handleMouseDown(index)}
               onMouseMove={() => handleMouseMove(index)}
               onMouseUp={handleMouseUp}
-            ></div>
+            >
+              {event && <div className="p-1 text-sm">{event.name}</div>}
+            </div>
           );
         })}
       </div>
@@ -71,6 +101,7 @@ const Calendar = () => {
       : [{ id: 1, name: "Resource A" }];
   });
   const [selectedCells, setSelectedCells] = useState(null);
+  const [events, setEvents] = useState([]); 
 
   useEffect(() => {
     localStorage.setItem("resources", JSON.stringify(resources));
@@ -108,9 +139,9 @@ const Calendar = () => {
         name: eventName,
         startDate,
         endDate,
+        color: getRandomColor(), // Assign a random color to the event
       };
-      // Save the event (you can store it in state or localStorage)
-      console.log("New Event:", newEvent);
+      setEvents([...events, newEvent]); // Add the new event to the events state
     }
   };
 
@@ -147,7 +178,6 @@ const Calendar = () => {
 
       <div className="overflow-auto flex-1">
         <div className="relative">
-          {/* Header Row */}
           <div
             className="sticky top-0 grid min-w-max bg-white z-40"
             style={{
@@ -160,7 +190,7 @@ const Calendar = () => {
             {renderHeaderCells()}
           </div>
 
-          {/* Grid Rows */}
+
           {resources.map((resource) => (
             <GridRow
               key={resource.id}
@@ -168,12 +198,14 @@ const Calendar = () => {
               daysInMonth={daysInMonth}
               onSelectCells={handleSelectCells}
               selectedCells={selectedCells}
+              events={events.filter(
+                (event) => event.resourceId === resource.id
+              )} 
             />
           ))}
         </div>
       </div>
 
-      {/* Button to add a new resource */}
       <div className="p-4 bg-white border-t border-gray-200">
         <button
           onClick={addResource}
