@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { getDaysInMonth, format, isToday } from "date-fns";
+import { getDaysInMonth, format, isToday, addDays } from "date-fns"; // Import addDays
 import Header from "./Header";
 
+// Utility function to generate a random color
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
   let color = "#";
@@ -12,27 +13,59 @@ const getRandomColor = () => {
 };
 
 const GridRow = React.memo(
-  ({ resource, daysInMonth, onSelectCells, selectedCells, events }) => {
+  ({
+    resource,
+    daysInMonth,
+    onSelectCells,
+    selectedCells,
+    events,
+    onMoveEvent,
+  }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [startCell, setStartCell] = useState(null);
     const [endCell, setEndCell] = useState(null);
+    const [draggedEvent, setDraggedEvent] = useState(null); // Track the event being dragged
 
-    const handleMouseDown = (index) => {
-      setIsDragging(true);
-      setStartCell(index);
-      setEndCell(index);
+    const handleMouseDown = (index, event) => {
+      if (event) {
+        // If clicking on an event, start dragging the event
+        setDraggedEvent(event);
+        setIsDragging(true);
+        setStartCell(index);
+        setEndCell(index);
+      } else {
+        // Otherwise, start selecting cells
+        setIsDragging(true);
+        setStartCell(index);
+        setEndCell(index);
+      }
     };
 
     const handleMouseMove = (index) => {
       if (isDragging) {
-        setEndCell(index);
+        if (draggedEvent) {
+          // If dragging an event, update the end cell
+          setEndCell(index);
+        } else {
+          // If selecting cells, update the end cell
+          setEndCell(index);
+        }
       }
     };
 
     const handleMouseUp = () => {
       if (isDragging) {
         setIsDragging(false);
-        onSelectCells(resource.id, startCell, endCell);
+        if (draggedEvent) {
+          // Calculate the number of days moved
+          const daysMoved = endCell - startCell;
+          // Move the event
+          onMoveEvent(draggedEvent.id, daysMoved);
+          setDraggedEvent(null); // Reset the dragged event
+        } else {
+          // Handle cell selection
+          onSelectCells(resource.id, startCell, endCell);
+        }
       }
     };
 
@@ -78,7 +111,7 @@ const GridRow = React.memo(
                   : "bg-indigo-200"
               }`}
               style={{ backgroundColor: event ? event.color : undefined }}
-              onMouseDown={() => handleMouseDown(index)}
+              onMouseDown={() => handleMouseDown(index, event)}
               onMouseMove={() => handleMouseMove(index)}
               onMouseUp={handleMouseUp}
             >
@@ -101,7 +134,7 @@ const Calendar = () => {
       : [{ id: 1, name: "Resource A" }];
   });
   const [selectedCells, setSelectedCells] = useState(null);
-  const [events, setEvents] = useState([]); 
+  const [events, setEvents] = useState([]); // State to store events
 
   useEffect(() => {
     localStorage.setItem("resources", JSON.stringify(resources));
@@ -145,6 +178,24 @@ const Calendar = () => {
     }
   };
 
+  const handleMoveEvent = (eventId, daysMoved) => {
+    setEvents((prevEvents) =>
+      prevEvents.map((event) => {
+        if (event.id === eventId) {
+          // Update the event's start and end dates
+          const newStartDate = addDays(new Date(event.startDate), daysMoved);
+          const newEndDate = addDays(new Date(event.endDate), daysMoved);
+          return {
+            ...event,
+            startDate: newStartDate,
+            endDate: newEndDate,
+          };
+        }
+        return event;
+      })
+    );
+  };
+
   const renderHeaderCells = () => {
     return [...Array(daysInMonth)].map((_, index) => {
       const dayDate = new Date(
@@ -178,6 +229,7 @@ const Calendar = () => {
 
       <div className="overflow-auto flex-1">
         <div className="relative">
+          {/* Header Row */}
           <div
             className="sticky top-0 grid min-w-max bg-white z-40"
             style={{
@@ -190,7 +242,7 @@ const Calendar = () => {
             {renderHeaderCells()}
           </div>
 
-
+          {/* Grid Rows */}
           {resources.map((resource) => (
             <GridRow
               key={resource.id}
@@ -200,7 +252,8 @@ const Calendar = () => {
               selectedCells={selectedCells}
               events={events.filter(
                 (event) => event.resourceId === resource.id
-              )} 
+              )} // Pass events for the current resource
+              onMoveEvent={handleMoveEvent} // Pass the move event handler
             />
           ))}
         </div>
