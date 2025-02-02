@@ -42,7 +42,7 @@ const Header = ({ onDateChange }) => {
           aria-label="Select date"
         >
           <CalendarIcon size={20} className="text-gray-500" />
-          <span className="text-lg font-semibold">
+          <span className="text-xl font-semibold text-blue-600">
             {format(selectedDate, "MMMM yyyy")}
           </span>
         </button>
